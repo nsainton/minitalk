@@ -6,7 +6,7 @@
 #    By: nsainton <nsainton@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/29 21:53:38 by nsainton          #+#    #+#              #
-#    Updated: 2023/01/15 01:15:46 by nsainton         ###   ########.fr        #
+#    Updated: 2023/05/05 17:23:53 by nsainton         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,13 +20,17 @@ CLIENT= client
 
 C_PROG= $(CLIENT).c
 
-LIBFT_DIR= ../Libft
+LIBS_DIR ?= $(addprefix $(shell pwd)/, libs)
 
-LIBFT_NAME= libft.a
+LFT_URL := git@github.com:nsainton/libft.git
 
-LIBFT_PATH= $(LIBFT_DIR)/$(LIBFT_NAME)
+LFT_DIR= $(addprefix $(LIBS_DIR)/, libft)
 
-LIBFT_ABBR= -lft
+LFT_NAME= libft.a
+
+LFT_PATH= $(LFT_DIR)/$(LFT_NAME)
+
+LFT_ABBR= -lft
 
 INC_DIR= includes
 
@@ -44,42 +48,46 @@ OBJS= $(addprefix $(OBJS_DIR)/, $(OBJS_NAMES))
 
 CFLAGS= -Wall -Wextra -Werror
 
-CC= cc
+CC= gcc
 
-export C_INCLUDE_PATH=$(INC_DIR):$(LIBFT_DIR)/$(INC_DIR)
-export LIBRARY_PATH=$(LIBFT_DIR)
+export LIBS_DIR
+export C_INCLUDE_PATH=$(INC_DIR):$(LFT_DIR)/$(INC_DIR)
+export LIBRARY_PATH=$(LFT_DIR)
 
-all:
+all: | $(LFT_DIR)
 	$(MAKE) $(NAME)
 
 $(NAME):
-	$(MAKE) -C $(LIBFT_DIR)
+	$(MAKE) -C $(LFT_DIR)
 	$(MAKE) $(SERVER)
 	$(MAKE) $(CLIENT)
 
-$(SERVER): $(S_PROG) $(OBJS) $(LIBFT_PATH)
-	$(CC) $(CFLAGS) $(GG) $(OPT) $(OBJS) $(S_PROG) $(LIBFT_ABBR) -o $(SERVER)
+$(SERVER): $(S_PROG) $(OBJS) $(LFT_PATH)
+	$(CC) $(CFLAGS) $(GG) $(OPT) $(OBJS) $(S_PROG) $(LFT_ABBR) -o $(SERVER)
 	@echo "$(BEGIN)$(BOLD);$(RED)m $$server_header $(END)"
 
-$(CLIENT): $(C_PROG) $(OBJS) $(LIBFT_PATH)
-	$(CC) $(CFLAGS) $(GG) $(OPT) $(OBJS) $(CLIENT).c $(LIBFT_ABBR) -o $(CLIENT)
+$(CLIENT): $(C_PROG) $(OBJS) $(LFT_PATH)
+	$(CC) $(CFLAGS) $(GG) $(OPT) $(OBJS) $(CLIENT).c $(LFT_ABBR) -o $(CLIENT)
 	@echo "$(BEGIN)$(BOLD);$(CYAN)m $$client_header $(END)"
 
-$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c $(wildcard $(INC_DIR)/*) $(LIBFT) | $(OBJS_DIR)
-	$(CC) $(CFLAGS) $(GG) $(OPT) -c $< $(LIBFT) -o $@
+$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c $(wildcard $(INC_DIR)/*) $(LFT) | $(OBJS_DIR)
+	$(CC) $(CFLAGS) $(GG) $(OPT) -c $< $(LFT) -o $@
 
 $(OBJS_DIR):
 	mkdir $(OBJS_DIR)
 
-$(LIBFT):
-	$(MAKE) -C $(LIBFT_DIR)
+$(LFT):
+	$(MAKE) -C $(LFT_DIR)
+
+$(LFT_DIR):
+	git clone $(LFT_URL) $@
 
 debug:
 	$(MAKE) fclean
 	$(MAKE) GG=-g3 OPT=-O0
 
 clean:
-	$(MAKE) clean -C $(LIBFT_DIR)
+	$(MAKE) clean -C $(LFT_DIR)
 	rm -rf $(OBJS_DIR)
 	echo "$(BEGIN)$(RED)mObjects have been successfully removed$(END)"
 
@@ -89,8 +97,11 @@ oclean:
 	$(BEGIN)$(UNDERLINED);$(RED)m$(CLIENT)$(BEGIN)$(NORMAL);$(CYAN)m have been \
 	successfully removed$(END)"
 
+lclean:
+	$(RM) -f $(LIBS_DIR)
+
 fclean: clean
-	$(MAKE) oclean -C $(LIBFT_DIR)
+	$(MAKE) oclean -C $(LFT_DIR)
 	$(MAKE) oclean
 
 rendu:

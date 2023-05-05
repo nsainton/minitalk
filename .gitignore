@@ -26,3 +26,6 @@ main.c
 # Client and server executables #
 client
 server
+
+# Libs dir #
+libs
